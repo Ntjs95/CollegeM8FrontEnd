@@ -1,6 +1,5 @@
 import 'package:collegem8/Models/user.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 import 'models/login.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -62,6 +61,21 @@ class LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Widget setUpButtonChild() {
+    if (_buttonSignInState == 0) {
+      return new Text(
+        "Sign In",
+        style: TextStyle(color: Colors.white, fontSize: 16),
+      );
+    } else if (_buttonSignInState == 1) {
+      return CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      );
+    } else {
+      return Icon(Icons.check, color: Colors.white);
+    }
+  }
+
   void attemptSignIn() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save(); // Save textbox values into the class.
@@ -82,21 +96,6 @@ class LoginScreenState extends State<LoginScreen> {
       });
       _buttonSignInState = 1;
       setState(() {});
-    }
-  }
-
-  Widget setUpButtonChild() {
-    if (_buttonSignInState == 0) {
-      return new Text(
-        "Sign In",
-        style: TextStyle(color: Colors.white, fontSize: 16),
-      );
-    } else if (_buttonSignInState == 1) {
-      return CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-      );
-    } else {
-      return Icon(Icons.check, color: Colors.white);
     }
   }
 
