@@ -56,7 +56,10 @@ class LoginScreenState extends State<LoginScreen> {
     return ElevatedButton(
       child: setUpButtonChild(),
       onPressed: () {
-        attemptSignIn();
+        if (_formKey.currentState.validate()) {
+          _formKey.currentState.save(); // Save textbox values into the class.
+          attemptSignIn();
+        }
       },
     );
   }
@@ -77,26 +80,22 @@ class LoginScreenState extends State<LoginScreen> {
   }
 
   void attemptSignIn() {
-    if (_formKey.currentState.validate()) {
-      _formKey.currentState.save(); // Save textbox values into the class.
-      // if is valid...
-      Login login = new Login(username: _username, password: _password);
-      Future<User> user = login.authenticate();
-      user.then((value) {
-        _buttonSignInState = 2;
-        setState(() {});
-      }).catchError((err) {
-        Text txtLoginFailed = new Text(
-          "Username/password incorrect",
-          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-        );
-        _screenText = txtLoginFailed;
-        _buttonSignInState = 0;
-        setState(() {});
-      });
-      _buttonSignInState = 1;
+    Login login = new Login(username: _username, password: _password);
+    Future<User> user = login.authenticate();
+    user.then((value) {
+      _buttonSignInState = 2;
       setState(() {});
-    }
+    }).catchError((err) {
+      Text txtLoginFailed = new Text(
+        "Username/password incorrect",
+        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+      );
+      _screenText = txtLoginFailed;
+      _buttonSignInState = 0;
+      setState(() {});
+    });
+    _buttonSignInState = 1;
+    setState(() {});
   }
 
   @override

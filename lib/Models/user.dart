@@ -1,9 +1,9 @@
 import 'dart:convert';
+import 'package:collegem8/Models/webService.dart';
 import 'package:http/http.dart' as http;
+import 'package:collegem8/Models/config.dart';
 
 class User {
-  static const String _userUrl =
-      "https://collegem820210207221016.azurewebsites.net/api/User";
   final String userId;
   final String username;
   final String firstName;
@@ -12,6 +12,7 @@ class User {
   final String programName;
   final String emailaddress;
   final String birthDate;
+  final String password;
 
   User(
       {this.userId,
@@ -21,7 +22,8 @@ class User {
       this.schoolName,
       this.programName,
       this.emailaddress,
-      this.birthDate});
+      this.birthDate,
+      this.password});
 
   Map<String, dynamic> toJsonMap() => {
         'userId': userId,
@@ -32,6 +34,7 @@ class User {
         'programName': programName,
         'emailAddress': emailaddress,
         'birthDate': birthDate,
+        'password': password,
       };
 
   String toJsonString() {
@@ -53,5 +56,18 @@ class User {
   static User parseUser(String responseBody) {
     final parsed = jsonDecode(responseBody);
     return User.fromJson(parsed);
+  }
+
+  Future<User> createUser() async {
+    final response =
+        await WebService.webPost(Config.userUrl, this.toJsonString());
+    if (response.statusCode == 200) {
+      return User.parseUser(response.body);
+    } else if (response.statusCode == 400) {
+      throw Exception(
+          response.body); // 400 Gives a description as to why it failed
+    } else {
+      throw Exception("Account creation failed.");
+    }
   }
 }

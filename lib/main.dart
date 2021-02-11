@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'loginScreen.dart';
+import 'createAccountScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,7 +15,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
       ),
       // home: MyHomePage(title: 'College M8'),
-      home: LoginScreen(),
+      // home: LoginScreen(),
+      home: CreateAccountScreen(),
     );
   }
 }

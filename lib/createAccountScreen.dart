@@ -17,17 +17,19 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   String _schoolName;
   String _programName;
   String _emailAddress;
-  String _birthDate;
+  String _birthDateStr;
 
   final alphanumericPattern = RegExp(r'^[a-zA-Z0-9]+$');
-  final alphaPattern = RegExp(r'^[a-zA-Z]+$');
+  final alphanumericSpacePattern = RegExp(r'^[a-zA-Z0-9 ]+$');
   final passwordPattern = new RegExp(
-      r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
+      r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{4,}$');
   final emailPattern = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _passwordController = TextEditingController();
+  int _createAccountButtonState = 0;
+  Text _screenText = new Text("Create Account");
 
   Widget _buildUsername() {
     return TextFormField(
@@ -85,9 +87,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         }
         return null;
       },
-      onSaved: (String value) {
-        _passwordConfirm = value;
-      },
     );
   }
 
@@ -101,8 +100,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           return "First name is required.";
         } else if (value.length >= 32) {
           return "First name must be less than 32 letters.";
-        } else if (!alphaPattern.hasMatch(value)) {
-          return "First name must only contain letters";
+        } else if (!alphanumericSpacePattern.hasMatch(value)) {
+          return "First name must not contain special characters.";
         }
         return null;
       },
@@ -122,8 +121,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           return "Last name is required.";
         } else if (value.length >= 32) {
           return "Last name must be less than 32 letters.";
-        } else if (!alphaPattern.hasMatch(value)) {
-          return "Last name must only contain letters";
+        } else if (!alphanumericSpacePattern.hasMatch(value)) {
+          return "Last name must not contain special characters.";
         }
         return null;
       },
@@ -143,7 +142,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           return "School name is required.";
         } else if (value.length >= 50) {
           return "School name must be less than 50 letters.";
-        } else if (!alphanumericPattern.hasMatch(value)) {
+        } else if (!alphanumericSpacePattern.hasMatch(value)) {
           return "School name must only contain letters/numbers";
         }
         return null;
@@ -164,7 +163,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           return "Program name is required.";
         } else if (value.length >= 50) {
           return "Program name must be less than 50 letters.";
-        } else if (!alphanumericPattern.hasMatch(value)) {
+        } else if (!alphanumericSpacePattern.hasMatch(value)) {
           return "Program name must only contain letters/numbers";
         }
         return null;
@@ -198,33 +197,113 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   Widget _buildBirthDate() {
     final format = DateFormat("yyyy-MM-dd");
-    return Column(children: <Widget>[
-      Text('Basic date field (${format.pattern})'),
-      DateTimeField(
-        format: format,
-        onShowPicker: (context, currentValue) {
-          return showDatePicker(
-              context: context,
-              firstDate: DateTime(1900),
-              initialDate: currentValue ?? DateTime.now(),
-              lastDate: DateTime(2100));
-        },
-      ),
-    ]);
+    return DateTimeField(
+      decoration: InputDecoration(labelText: "Birth Date"),
+      format: format,
+      onShowPicker: (context, currentValue) {
+        return showDatePicker(
+            context: context,
+            firstDate: DateTime(1900),
+            initialDate: currentValue ?? DateTime.now(),
+            lastDate: DateTime(2100));
+      },
+      validator: (DateTime date) {
+        DateTime today = DateTime.now();
+        if (date == null) {
+          return "You must choose a date.";
+        } else if (date.day == today.day &&
+            date.month == today.month &&
+            date.year == today.year) {
+          return "You must choose a date.";
+        } else if (today.year - 13 < date.year) {
+          // Scuffed age check TODO update with month logic
+          return "You are too young to use this site.";
+        }
+        return null;
+      },
+      onSaved: (date) {
+        _birthDateStr = date.toIso8601String();
+      },
+    );
+  }
+
+  ElevatedButton _buildCreateAccountButton() {
+    return ElevatedButton(
+      child: setUpButtonChild(),
+      onPressed: () {
+        if (_formKey.currentState.validate()) {
+          _formKey.currentState.save(); // Save textbox values into the class.
+          attemptCreateAccount();
+        }
+      },
+    );
+  }
+
+  Widget setUpButtonChild() {
+    if (_createAccountButtonState == 0) {
+      return new Text(
+        "Create Account",
+        style: TextStyle(color: Colors.white, fontSize: 16),
+      );
+    } else if (_createAccountButtonState == 1) {
+      return CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      );
+    } else {
+      return Icon(Icons.check, color: Colors.white);
+    }
+  }
+
+  void attemptCreateAccount() {
+    User user = new User(
+        username: _username,
+        firstName: _firstName,
+        lastName: _lastName,
+        schoolName: _schoolName,
+        programName: _programName,
+        emailaddress: _emailAddress,
+        birthDate: _birthDateStr,
+        password: _password);
+    Future<User> createdAccount = user.createUser();
+    createdAccount.then((value) {
+      _createAccountButtonState = 2;
+      setState(() {});
+    }).catchError((err) {
+      Text txtAccountCreatedFailed = new Text(
+        err.toString(),
+        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+      );
+      // Change text on screen
+      _createAccountButtonState = 0;
+      _screenText = txtAccountCreatedFailed;
+      setState(() {});
+    });
+    _createAccountButtonState = 1;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(title: Text("Create Account")),
       body: Container(
-        margin: EdgeInsets.all(240),
         child: Form(
           key: _formKey,
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                // Enter widgets here
+                _screenText,
+                _buildUsername(),
+                _buildPassword(),
+                _buildPasswordConfirm(),
+                _buildEmailAddress(),
+                _buildFirstName(),
+                _buildLastName(),
+                _buildBirthDate(),
+                _buildSchoolName(),
+                _buildProgramName(),
+                _buildCreateAccountButton()
               ]),
         ),
       ),
