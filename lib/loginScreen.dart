@@ -1,4 +1,5 @@
 import 'package:collegem8/Models/user.dart';
+import 'package:collegem8/createAccountScreen.dart';
 import 'package:flutter/material.dart';
 import 'models/login.dart';
 
@@ -48,6 +49,19 @@ class LoginScreenState extends State<LoginScreen> {
       },
       onSaved: (String value) {
         _password = value;
+      },
+    );
+  }
+
+  ElevatedButton _buildCreateAccountButton() {
+    return ElevatedButton(
+      child: Text("Create Account"),
+      onPressed: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateAccountScreen(),
+            ));
       },
     );
   }
@@ -113,7 +127,8 @@ class LoginScreenState extends State<LoginScreen> {
                 _buildUsername(),
                 _buildPassword(),
                 SizedBox(height: 100),
-                _buildSignInButton()
+                _buildSignInButton(),
+                _buildCreateAccountButton()
               ]),
         ),
       ),

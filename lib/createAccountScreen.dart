@@ -288,6 +288,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: Text("Create Account")),
       body: Container(
+        margin: EdgeInsets.all(25),
         child: Form(
           key: _formKey,
           child: Column(

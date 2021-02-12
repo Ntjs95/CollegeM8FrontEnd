@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
       ),
-      // home: MyHomePage(title: 'College M8'),
-      // home: LoginScreen(),
-      home: CreateAccountScreen(),
+      home: MyHomePage(title: 'College M8'),
     );
   }
 }
@@ -38,12 +36,27 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  AppBar siteHeader() {
+    return new AppBar(title: Text(widget.title), actions: <Widget>[
+      IconButton(
+        padding: EdgeInsets.only(right: 60),
+        icon: const Icon(Icons.person),
+        tooltip: 'Sign In',
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(),
+              ));
+        },
+      )
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: siteHeader(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
